@@ -13,6 +13,8 @@ set shiftwidth=2
 set maxmempattern=300000
 
 set directory^=$HOME/.vim/tmp//
+set encoding=utf-8
+let g:NERDTreeDirArrows=0
 
 call plug#begin()
 Plug 'scrooloose/nerdtree'
