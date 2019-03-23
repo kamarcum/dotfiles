@@ -102,6 +102,7 @@ install_rubies() {
   cd "$HOME/.rbenv/plugins/ruby-build"
   git pull -q
   "$HOME/.rbenv/bin/rbenv" install -s 2.6.2
+  link ".gemrc"
 }
 
 setup_vim &&
