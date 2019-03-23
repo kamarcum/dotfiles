@@ -63,14 +63,16 @@ install_hub() {
 }
 
 install_rbenv() {
-  if [ -d ~/.rbenv ]; then
+  local rbenv_root="$HOME/.rbenv"
+  local rbenv="$rbenv_root/bin/rbenv"
+  if [ -d "$rbenv_root" ]; then
     return;
   fi
 
-  git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-  ~/.rbenv/bin/rbenv init
-  mkdir -p "$(rbenv root)"/plugins
-  git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
+  git clone https://github.com/rbenv/rbenv.git $rbenv_root
+  "$rbenv" init
+  mkdir -p "${rbenv_root}/plugins"
+  git clone https://github.com/rbenv/ruby-build.git "${rbenv_root}/plugins/ruby-build"
 }
 
 install_ruby_build_dependencies() {
@@ -84,7 +86,7 @@ install_ruby_build_dependencies() {
 install_rubies() {
   install_rbenv
   install_ruby_build_dependencies
-  rbenv install -s -v 2.6.2
+  rbenv install -s 2.6.2
 }
 
 setup_vim
