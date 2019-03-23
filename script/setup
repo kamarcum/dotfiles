@@ -87,7 +87,7 @@ install_ruby_build_dependencies() {
 install_rubies() {
   install_rbenv
   install_ruby_build_dependencies
-  rbenv install -s 2.6.2
+  "$HOME/.rbenv/bin/rbenv" install -s 2.6.2
 }
 
 setup_vim &&
