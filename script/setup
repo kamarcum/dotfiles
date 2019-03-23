@@ -27,7 +27,7 @@ setup_vim() {
 }
 
 setup_tmux() {
-  sudo apt-get install tmux
+  sudo apt-get install -yqq tmux
   link ".tmux.conf"
 }
 
@@ -37,13 +37,29 @@ install_packer() {
     return;
   fi
 
-  sudo apt-get install unzip
+  sudo apt-get install -yqq unzip
   cd $HOME
-  curl -fLo packer.zip \
+  curl -fLso packer.zip \
     "https://releases.hashicorp.com/packer/${version}/packer_${version}_linux_amd64.zip"
   unzip packer.zip -d .
   sudo mv packer /usr/local/bin/
   rm packer.zip
+}
+
+install_hub() {
+  local version="2.10.0"
+  if [ -f /usr/local/bin/hub ] &&
+    [ "$version" == "$(hub --version | tail -n 1 | cut -d ' ' -f 3)" ]; then
+    return;
+  fi
+
+  cd $HOME
+  curl -fLso hub.tgz \
+    "https://github.com/github/hub/releases/download/v${version}/hub-linux-amd64-${version}.tgz"
+  mkdir hub
+  tar -xzf hub.tgz -C hub --strip-components=1
+  sudo ./hub/install
+  rm -rf "$HOME/hub"
 }
 
 install_rbenv() {
@@ -58,7 +74,7 @@ install_rbenv() {
 }
 
 install_ruby_build_dependencies() {
-  sudo apt-get install -y \
+  sudo apt-get install -yqq \
     build-essential \
     libreadline6-dev \
     zlib1g-dev \
@@ -77,3 +93,4 @@ link ".bash_aliases"
 link ".gitconfig"
 install_packer
 install_rubies
+install_hub
