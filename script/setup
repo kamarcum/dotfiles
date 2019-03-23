@@ -2,10 +2,11 @@
 
 SCRIPT_DIR="$(dirname $0)"
 DOTFILES_HOME="${HOME}/.dotfiles/home"
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 link() {
   if [ "$(readlink $HOME/$1)" == "${DOTFILES_HOME}/$1" ]; then
-    return;
+    return 0;
   elif [ -f "$HOME/$1" ]; then
     echo "Oh dear. I couldn't symlink $1 because it's already a file."
     echo "\`rm $HOME/$1\` and rerun this script to establish the link."
@@ -34,13 +35,13 @@ setup_tmux() {
 install_packer() {
   local version="1.3.5"
   if [ -f /usr/local/bin/packer ] && [ "$version" == "$(packer --version)" ]; then
-    return;
+    return 0;
   fi
 
   sudo apt-get install -yqq unzip
   cd $HOME
   curl -fLso packer.zip \
-    "https://releases.hashicorp.com/packer/${version}/packer_${version}_linux_amd64.zip"
+    "https://releases.hashicorp.com/packer/${version}/packer_${version}_${OS}_amd64.zip"
   unzip packer.zip -d .
   sudo mv packer /usr/local/bin/
   rm packer.zip
@@ -50,12 +51,12 @@ install_hub() {
   local version="2.10.0"
   if [ -f /usr/local/bin/hub ] &&
     [ "$version" == "$(hub --version | tail -n 1 | cut -d ' ' -f 3)" ]; then
-    return;
+    return 0;
   fi
 
   cd $HOME
   curl -fLso hub.tgz \
-    "https://github.com/github/hub/releases/download/v${version}/hub-linux-amd64-${version}.tgz"
+    "https://github.com/github/hub/releases/download/v${version}/hub-${OS}-amd64-${version}.tgz"
   mkdir hub
   tar -xzf hub.tgz -C hub --strip-components=1
   sudo ./hub/install
@@ -66,7 +67,7 @@ install_rbenv() {
   local rbenv_root="$HOME/.rbenv"
   local rbenv="$rbenv_root/bin/rbenv"
   if [ -d "$rbenv_root" ]; then
-    return;
+    return 0;
   fi
 
   git clone https://github.com/rbenv/rbenv.git $rbenv_root
@@ -89,10 +90,10 @@ install_rubies() {
   rbenv install -s 2.6.2
 }
 
-setup_vim
-setup_tmux
-link ".bash_aliases"
-link ".gitconfig"
-install_packer
-install_rubies
-install_hub
+setup_vim &&
+setup_tmux &&
+link ".bash_aliases" &&
+link ".gitconfig" &&
+install_packer &&
+install_rubies &&
+install_hub && echo "You're good to go."
