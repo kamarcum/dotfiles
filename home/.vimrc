@@ -11,6 +11,8 @@ set tabstop=2
 set softtabstop=2
 set shiftwidth=2
 set maxmempattern=300000
+set number relativenumber
+set nu rnu
 
 set directory^=$HOME/.vim/tmp//
 let NERDTreeShowHidden=1
@@ -18,14 +20,15 @@ let NERDTreeDirArrowCollapsible='~'
 let NERDTreeDirArrowExpandable='+'
 
 call plug#begin()
-Plug 'scrooloose/nerdtree'
+Plug 'airblade/vim-gitgutter'
 Plug 'flazz/vim-colorschemes'
+Plug 'hashivim/vim-terraform'
+Plug 'rodjek/vim-puppet'
+Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rails'
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
-Plug 'hashivim/vim-terraform'
-Plug 'rodjek/vim-puppet'
 call plug#end()
 
 "Highlight trailing whitespace
