@@ -111,4 +111,5 @@ link ".bash_aliases" &&
 link ".gitconfig" &&
 install_packer &&
 install_rubies &&
+install jq tree &&
 install_hub && echo "You're good to go."
