@@ -15,6 +15,18 @@ link() {
   fi
 }
 
+install() {
+  if [ $OS == "linux" ]; then
+    sudo apt-get install -yqq "$@"
+  elif [ $OS == "darwin" ]; then
+    echo "macOS isn't quite supported yet"
+    exit 1
+  else
+    echo "Oh dear. Why are you running this on ${OS}?"
+    exit 1
+  fi
+}
+
 setup_vim() {
   link ".vimrc"
 
@@ -28,7 +40,7 @@ setup_vim() {
 }
 
 setup_tmux() {
-  sudo apt-get install -y tmux
+  install tmux
   link ".tmux.conf"
 }
 
@@ -38,7 +50,7 @@ install_packer() {
     return 0;
   fi
 
-  sudo apt-get install -y unzip
+  install unzip
   cd $HOME
   curl -fLso packer.zip \
     "https://releases.hashicorp.com/packer/${version}/packer_${version}_${OS}_amd64.zip"
@@ -77,7 +89,7 @@ install_rbenv() {
 }
 
 install_ruby_build_dependencies() {
-  sudo apt-get install -y \
+  install \
     build-essential \
     libreadline6-dev \
     zlib1g-dev \
@@ -88,8 +100,7 @@ install_rubies() {
   install_rbenv
   install_ruby_build_dependencies
   cd "$HOME/.rbenv/plugins/ruby-build"
-  git pull
-  cd -
+  git pull -q
   "$HOME/.rbenv/bin/rbenv" install -s 2.6.2
 }
 
