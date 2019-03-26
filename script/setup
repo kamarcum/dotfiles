@@ -87,6 +87,9 @@ install_ruby_build_dependencies() {
 install_rubies() {
   install_rbenv
   install_ruby_build_dependencies
+  cd "$HOME/.rbenv/plugins/ruby-build"
+  git pull
+  cd -
   "$HOME/.rbenv/bin/rbenv" install -s 2.6.2
 }
 
