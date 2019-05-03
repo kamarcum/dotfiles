@@ -31,13 +31,29 @@ link() {
 }
 
 install() {
+  # Arguments to install are brew-package-name apt-get-package-name apt-get-package-args
+  brew_package_name="$1"
+  apt_get_args="${@:2}"
+  echo "Preparing to install ${brew_package_name} / ${apt_get_args}"
   if [ $OS == "linux" ]; then
-    sudo apt-get install -yqq "$@"
+    sudo apt-get install -yqq "$apt_get_args"
   elif [ $OS == "darwin" ]; then
-    echo "macOS isn't quite supported yet"
-    exit 1
+    has_brew=$(command -v brew >/dev/null)
+    if $has_brew; then
+      brew install $brew_package_name
+      exit_code=$?
+      if [ $exit_code != 0 ]; then
+        echo "  Installation Failed. Exiting."
+        exit $exit_code
+      fi
+    else
+      echo "  Homebrew wasn't found!"
+      echo "  Please install Homebrew at http://brew.sh and then rerun this script."
+      echo "  Exiting. For your own good."
+      exit 1
+    fi
   else
-    echo "Oh dear. Why are you running this on ${OS}?"
+    echo "Oh dear. Why are you running this on ${OS}? Exiting. For your own good."
     exit 1
   fi
 }
@@ -89,7 +105,7 @@ setup_vim() {
 }
 
 setup_tmux() {
-  install tmux
+  install tmux tmux
   link ".tmux.conf"
 }
 
@@ -99,7 +115,7 @@ install_packer() {
     return 0;
   fi
 
-  install unzip
+  install unzip unzip
   cd $HOME
   curl -fLso packer.zip \
     "https://releases.hashicorp.com/packer/${version}/packer_${version}_${OS}_amd64.zip"
@@ -122,7 +138,7 @@ install_rbenv() {
 }
 
 install_ruby_build_dependencies() {
-  install \
+  install no_darwin_equivalent \
     build-essential \
     libreadline6-dev \
     zlib1g-dev \
@@ -145,5 +161,6 @@ setup_vim &&
 setup_tmux &&
 install_packer &&
 install_rubies &&
-install jq tree &&
+install jq jq &&
+install tree tree &&
 echo "You're good to go. Customize .gitconfig.local and you'll be off to the races!"
