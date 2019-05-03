@@ -110,6 +110,11 @@ setup_tmux() {
 }
 
 install_packer() {
+  if [ $SKIP_PACKER == "true" ]; then
+    echo "Skipping installation of packer"
+    return 0;
+  fi
+  echo "Installing packer"
   local version="1.3.5"
   if [ -f /usr/local/bin/packer ] && [ "$version" == "$(packer --version)" ]; then
     return 0;
