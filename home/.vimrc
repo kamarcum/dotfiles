@@ -14,23 +14,6 @@ set maxmempattern=300000
 set number relativenumber
 set nu rnu
 
-set directory^=$HOME/.vim/tmp//
-let NERDTreeShowHidden=1
-let NERDTreeDirArrowCollapsible='~'
-let NERDTreeDirArrowExpandable='+'
-
-call plug#begin()
-Plug 'airblade/vim-gitgutter'
-Plug 'flazz/vim-colorschemes'
-Plug 'hashivim/vim-terraform'
-Plug 'rodjek/vim-puppet'
-Plug 'scrooloose/nerdtree'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-rails'
-Plug 'tpope/vim-sensible'
-Plug 'tpope/vim-surround'
-call plug#end()
-
 "Highlight trailing whitespace
 autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
 autocmd BufRead,InsertLeave * match ExtraWhitespace /\s\+$/
@@ -68,3 +51,7 @@ augroup encrypted
   " after the file has been written.
   autocmd BufWritePost,FileWritePost *.gpg u
 augroup END
+
+if filereadable(expand('~/.vimrc.local'))
+  source ~/.vimrc.local
+endif
