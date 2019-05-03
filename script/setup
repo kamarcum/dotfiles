@@ -4,12 +4,27 @@ SCRIPT_DIR="$(dirname $0)"
 DOTFILES_HOME="${HOME}/.dotfiles/home"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
+copy() {
+  echo "Copying $1"
+  if [ -f "$HOME/$1" ]; then
+    echo "  Oh dear. I couldn't copy $1 because it already exists."
+    echo "  This is totally normal if you've already run this script once before."
+    echo "  If you want to use my latest copy of that file,"
+    echo "  \`rm $HOME/$1\` and rerun this script."
+    return 1
+  else
+    cp "${DOTFILES_HOME}/$1" "${HOME}/$1"
+  fi
+}
+
 link() {
+  echo "Linking $1"
   if [ "$(readlink $HOME/$1)" == "${DOTFILES_HOME}/$1" ]; then
     return 0;
   elif [ -f "$HOME/$1" ]; then
-    echo "Oh dear. I couldn't symlink $1 because it's already a file."
-    echo "\`rm $HOME/$1\` and rerun this script to establish the link."
+    echo "  Oh dear. I couldn't symlink $1 because it's already a file."
+    echo "  \`rm $HOME/$1\` and rerun this script to establish the link."
+    return 1
   else
     ln -s "${DOTFILES_HOME}/$1" "${HOME}/$1"
   fi
@@ -25,6 +40,14 @@ install() {
     echo "Oh dear. Why are you running this on ${OS}?"
     exit 1
   fi
+}
+
+setup_bash() {
+  link ".bash_aliases"
+  copy ".bash_aliases.local"
+  link ".bashrc" || echo "  Note: Your .bashrc must load .bash_aliases for this setup to run correctly"
+  link ".bash_profile" || echo "  Note: Your .bash_profile must load .bashrc for this setup to run correctly"
+  echo "Note: To customize your bash settings, edit ~/.bash_aliases.local"
 }
 
 setup_vim() {
@@ -106,9 +129,9 @@ install_rubies() {
 }
 
 link ".ackrc" &&
+setup_bash &&
 setup_vim &&
 setup_tmux &&
-link ".bash_aliases" &&
 link ".gitconfig" &&
 install_packer &&
 install_rubies &&
