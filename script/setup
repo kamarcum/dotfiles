@@ -130,6 +130,7 @@ install_packer() {
 }
 
 install_rbenv() {
+  echo "Installing rbenv"
   local rbenv_root="$HOME/.rbenv"
   local rbenv="$rbenv_root/bin/rbenv"
   if [ -d "$rbenv_root" ]; then
@@ -143,6 +144,10 @@ install_rbenv() {
 }
 
 install_ruby_build_dependencies() {
+  if [ $OS == "darwin" ]; then
+    return 0;
+  fi
+  echo "Installing ruby build dependencies"
   install no_darwin_equivalent \
     build-essential \
     libreadline6-dev \
