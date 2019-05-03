@@ -50,6 +50,30 @@ setup_bash() {
   echo "Note: To customize your bash settings, edit ~/.bash_aliases.local"
 }
 
+install_hub() {
+  local version="2.10.0"
+  echo "Installing hub version $version"
+  if [ -f /usr/local/bin/hub ] &&
+    [ "$version" == "$(hub --version | tail -n 1 | cut -d ' ' -f 3)" ]; then
+    return 0;
+  fi
+
+  cd $HOME
+  curl -fLso hub.tgz \
+    "https://github.com/github/hub/releases/download/v${version}/hub-${OS}-amd64-${version}.tgz"
+  mkdir hub
+  tar -xzf hub.tgz -C hub --strip-components=1
+  sudo ./hub/install
+  rm -rf "$HOME/hub"
+}
+
+setup_git() {
+  link ".gitconfig"
+  copy ".gitconfig.local"
+  echo "Note: Edit ~/.gitconfig.local to use your own username and email!"
+  install_hub
+}
+
 setup_vim() {
   link ".vimrc"
 
@@ -80,22 +104,6 @@ install_packer() {
   unzip packer.zip -d .
   sudo mv packer /usr/local/bin/
   rm packer.zip
-}
-
-install_hub() {
-  local version="2.10.0"
-  if [ -f /usr/local/bin/hub ] &&
-    [ "$version" == "$(hub --version | tail -n 1 | cut -d ' ' -f 3)" ]; then
-    return 0;
-  fi
-
-  cd $HOME
-  curl -fLso hub.tgz \
-    "https://github.com/github/hub/releases/download/v${version}/hub-${OS}-amd64-${version}.tgz"
-  mkdir hub
-  tar -xzf hub.tgz -C hub --strip-components=1
-  sudo ./hub/install
-  rm -rf "$HOME/hub"
 }
 
 install_rbenv() {
@@ -130,10 +138,10 @@ install_rubies() {
 
 link ".ackrc" &&
 setup_bash &&
+setup_git &&
 setup_vim &&
 setup_tmux &&
-link ".gitconfig" &&
 install_packer &&
 install_rubies &&
 install jq tree &&
-install_hub && echo "You're good to go."
+echo "You're good to go. Customize .gitconfig.local and you'll be off to the races!"
