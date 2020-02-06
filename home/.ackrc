@@ -1,0 +1,18 @@
+# Search unknown file-types
+--type-set=coffee=.coffee
+--type-set=cucumber=.feature
+--type-set=haml=.haml
+--type-set=sass=.sass,.scss
+
+# Do not search these directories for quicker lookup
+--ignore-dir=log
+--ignore-dir=cassettes
+--ignore-dir=tags
+--ignore-dir=tmp
+
+# Custom:
+--ignore-dir=.sass-cache
+--ignore-dir=tmp
+--ignore-dir=_bower_components
+--ignore-dir=.sass
+--ignore-dir=_site

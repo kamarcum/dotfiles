@@ -1,3 +1,6 @@
-[user]
-  name = Keith Marcum
-  email = 13613+kamarcum@users.noreply.github.com
+[alias]
+  ci = commit
+  co = checkout
+  cp = cherry-pick
+[include]
+  path = ~/.gitconfig.local

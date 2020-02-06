@@ -4,63 +4,71 @@ SCRIPT_DIR="$(dirname $0)"
 DOTFILES_HOME="${HOME}/.dotfiles/home"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
+copy() {
+  echo "Copying $1"
+  if [ -f "$HOME/$1" ]; then
+    echo "  Oh dear. I couldn't copy $1 because it already exists."
+    echo "  This is totally normal if you've already run this script once before."
+    echo "  If you want to use my latest copy of that file,"
+    echo "  \`rm $HOME/$1\` and rerun this script."
+    return 1
+  else
+    cp "${DOTFILES_HOME}/$1" "${HOME}/$1"
+  fi
+}
+
 link() {
+  echo "Linking $1"
   if [ "$(readlink $HOME/$1)" == "${DOTFILES_HOME}/$1" ]; then
     return 0;
   elif [ -f "$HOME/$1" ]; then
-    echo "Oh dear. I couldn't symlink $1 because it's already a file."
-    echo "\`rm $HOME/$1\` and rerun this script to establish the link."
+    echo "  Oh dear. I couldn't symlink $1 because it's already a file."
+    echo "  \`rm $HOME/$1\` and rerun this script to establish the link."
+    return 1
   else
     ln -s "${DOTFILES_HOME}/$1" "${HOME}/$1"
   fi
 }
 
 install() {
+  # Arguments to install are brew-package-name apt-get-package-name apt-get-package-args
+  brew_package_name="$1"
+  apt_get_args="${@:2}"
+  echo "Preparing to install ${brew_package_name} / ${apt_get_args}"
   if [ $OS == "linux" ]; then
-    sudo apt-get install -yqq "$@"
+    sudo apt-get install -yqq "$apt_get_args"
   elif [ $OS == "darwin" ]; then
-    echo "macOS isn't quite supported yet"
-    exit 1
+    has_brew=$(command -v brew >/dev/null)
+    if $has_brew; then
+      brew install $brew_package_name
+      exit_code=$?
+      if [ $exit_code != 0 ]; then
+        echo "  Installation Failed. Exiting."
+        exit $exit_code
+      fi
+    else
+      echo "  Homebrew wasn't found!"
+      echo "  Please install Homebrew at http://brew.sh and then rerun this script."
+      echo "  Exiting. For your own good."
+      exit 1
+    fi
   else
-    echo "Oh dear. Why are you running this on ${OS}?"
+    echo "Oh dear. Why are you running this on ${OS}? Exiting. For your own good."
     exit 1
   fi
 }
 
-setup_vim() {
-  link ".vimrc"
-
-  if [ ! -f ~/.vim/autoload/plug.vim ]; then
-    curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-          https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  fi
-
-  vim +"PlugInstall --sync" +qa > /dev/null 2>&1
-  mkdir -p ~/.vim/tmp
-}
-
-setup_tmux() {
-  install tmux
-  link ".tmux.conf"
-}
-
-install_packer() {
-  local version="1.3.5"
-  if [ -f /usr/local/bin/packer ] && [ "$version" == "$(packer --version)" ]; then
-    return 0;
-  fi
-
-  install unzip
-  cd $HOME
-  curl -fLso packer.zip \
-    "https://releases.hashicorp.com/packer/${version}/packer_${version}_${OS}_amd64.zip"
-  unzip packer.zip -d .
-  sudo mv packer /usr/local/bin/
-  rm packer.zip
+setup_bash() {
+  link ".bash_aliases"
+  copy ".bash_aliases.local"
+  link ".bashrc" || echo "  Note: Your .bashrc must load .bash_aliases for this setup to run correctly"
+  link ".bash_profile" || echo "  Note: Your .bash_profile must load .bashrc for this setup to run correctly"
+  echo "Note: To customize your bash settings, edit ~/.bash_aliases.local"
 }
 
 install_hub() {
   local version="2.10.0"
+  echo "Installing hub version $version"
   if [ -f /usr/local/bin/hub ] &&
     [ "$version" == "$(hub --version | tail -n 1 | cut -d ' ' -f 3)" ]; then
     return 0;
@@ -75,7 +83,54 @@ install_hub() {
   rm -rf "$HOME/hub"
 }
 
+setup_git() {
+  link ".gitconfig"
+  copy ".gitconfig.local"
+  echo "Note: Edit ~/.gitconfig.local to use your own username and email!"
+  install_hub
+}
+
+setup_vim() {
+  link ".vimrc"
+  copy ".vimrc.local"
+
+  if [ ! -f ~/.vim/autoload/plug.vim ]; then
+    echo "Downloading plug.vim"
+    curl -fLso ~/.vim/autoload/plug.vim --create-dirs \
+          https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  fi
+
+  vim +"PlugInstall --sync" +qa > /dev/null 2>&1
+  mkdir -p ~/.vim/tmp
+}
+
+setup_tmux() {
+  install tmux tmux
+  link ".tmux.conf"
+}
+
+install_packer() {
+  if [ $SKIP_PACKER == "true" ]; then
+    echo "Skipping installation of packer"
+    return 0;
+  fi
+  echo "Installing packer"
+  local version="1.3.5"
+  if [ -f /usr/local/bin/packer ] && [ "$version" == "$(packer --version)" ]; then
+    return 0;
+  fi
+
+  install unzip unzip
+  cd $HOME
+  curl -fLso packer.zip \
+    "https://releases.hashicorp.com/packer/${version}/packer_${version}_${OS}_amd64.zip"
+  unzip packer.zip -d .
+  sudo mv packer /usr/local/bin/
+  rm packer.zip
+}
+
 install_rbenv() {
+  echo "Installing rbenv"
   local rbenv_root="$HOME/.rbenv"
   local rbenv="$rbenv_root/bin/rbenv"
   if [ -d "$rbenv_root" ]; then
@@ -89,7 +144,11 @@ install_rbenv() {
 }
 
 install_ruby_build_dependencies() {
-  install \
+  if [ $OS == "darwin" ]; then
+    return 0;
+  fi
+  echo "Installing ruby build dependencies"
+  install no_darwin_equivalent \
     build-essential \
     libreadline6-dev \
     zlib1g-dev \
@@ -105,11 +164,13 @@ install_rubies() {
   link ".gemrc"
 }
 
+link ".ackrc" &&
+setup_bash &&
+setup_git &&
 setup_vim &&
 setup_tmux &&
-link ".bash_aliases" &&
-link ".gitconfig" &&
 install_packer &&
 install_rubies &&
-install jq tree &&
-install_hub && echo "You're good to go."
+install jq jq &&
+install tree tree &&
+echo "You're good to go. Customize .gitconfig.local and you'll be off to the races!"

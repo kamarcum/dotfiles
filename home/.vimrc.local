@@ -1,0 +1,16 @@
+set directory^=$HOME/.vim/tmp//
+let NERDTreeShowHidden=1
+let NERDTreeDirArrowCollapsible='~'
+let NERDTreeDirArrowExpandable='+'
+
+call plug#begin()
+Plug 'airblade/vim-gitgutter'
+Plug 'flazz/vim-colorschemes'
+Plug 'hashivim/vim-terraform'
+Plug 'rodjek/vim-puppet'
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-rails'
+Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-surround'
+call plug#end()
