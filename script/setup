@@ -180,6 +180,7 @@ install_personal_packages() {
 }
 
 link ".ackrc" &&
+link ".inputrc" &&
 setup_bash &&
 setup_git &&
 setup_vim &&
