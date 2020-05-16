@@ -110,7 +110,7 @@ setup_tmux() {
 }
 
 install_packer() {
-  if [ $SKIP_PACKER == "true" ]; then
+  if [ "$SKIP_PACKER" == "true" ]; then
     echo "Skipping installation of packer"
     return 0;
   fi
@@ -148,11 +148,10 @@ install_ruby_build_dependencies() {
     return 0;
   fi
   echo "Installing ruby build dependencies"
-  install no_darwin_equivalent \
-    build-essential \
-    libreadline6-dev \
-    zlib1g-dev \
-    libssl-dev
+  install no_darwin_equivalent build-essential
+  install no_darwin_equivalent libreadline6-dev
+  install no_darwin_equivalent zlib1g-dev
+  install no_darwin_equivalent libssl-dev
 }
 
 install_rubies() {
