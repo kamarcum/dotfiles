@@ -16,3 +16,4 @@
 --ignore-dir=_bower_components
 --ignore-dir=.sass
 --ignore-dir=_site
+--ignore-file=ext:min.js

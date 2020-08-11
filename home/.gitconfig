@@ -2,5 +2,12 @@
   ci = commit
   co = checkout
   cp = cherry-pick
+[core]
+  editor = vim
+  whitespace = warn
+[help]
+  autocorrect = 10
 [include]
   path = ~/.gitconfig.local
+[interactive]
+  singlekey = true
