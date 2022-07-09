@@ -89,6 +89,7 @@ install_hub() {
 
 setup_git() {
   link ".gitconfig"
+  link ".gitignore.global"
   copy ".gitconfig.local"
   echo "Note: Edit ~/.gitconfig.local to use your own username and email!"
   install_hub

@@ -4,6 +4,7 @@
   cp = cherry-pick
 [core]
   editor = vim
+  excludesfile = ~/.gitignore.global
   whitespace = warn
 [help]
   autocorrect = 10
