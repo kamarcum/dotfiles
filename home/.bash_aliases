@@ -30,6 +30,7 @@ alias grc='git rebase --continue'
 alias grim='git rebase -i master'
 alias gst='git status'
 alias reset-authors='git commit --amend --reset-author -C HEAD'
+alias ll='ls -l'
 
 # Store 10,000 history entries
 export HISTSIZE=10000
