@@ -4,7 +4,7 @@
 
 ```
 git clone https://github.com/kamarcum/dotfiles $HOME/.dotfiles
-bash $HOME/.dotfiles/scripts/setup
+bash $HOME/.dotfiles/script/setup
 ```
 
 If you don't want packer, add `SKIP_PACKER=true` to the script command above.

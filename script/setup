@@ -68,6 +68,7 @@ setup_bash() {
   link ".bashrc" || echo "  Note: Your .bashrc must load .bash_aliases for this setup to run correctly"
   link ".bash_profile" || echo "  Note: Your .bash_profile must load .bashrc for this setup to run correctly"
   echo "Note: To customize your bash settings, edit ~/.bash_aliases.local"
+  read -rsp $'Press any key to continue...\n'
 }
 
 install_hub() {
@@ -92,6 +93,7 @@ setup_git() {
   link ".gitignore.global"
   copy ".gitconfig.local"
   echo "Note: Edit ~/.gitconfig.local to use your own username and email!"
+  read -rsp $'Press any key to continue...\n'
   install_hub
 }
 
@@ -165,7 +167,7 @@ install_rubies() {
   install_ruby_build_dependencies
   cd "$HOME/.rbenv/plugins/ruby-build"
   git pull -q
-  "$HOME/.rbenv/bin/rbenv" install -s 2.6.2
+  "$HOME/.rbenv/bin/rbenv" install -s 3.1.2
   link ".gemrc"
 }
 
