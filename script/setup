@@ -38,7 +38,7 @@ install() {
   if [ $OS == "linux" ]; then
     sudo apt-get install -yqq "$apt_get_args"
   elif [ $OS == "darwin" ]; then
-    has_brew=$(command -v brew >/dev/null)
+    has_brew=$(command -v brew > /dev/null)
     if $has_brew; then
       if brew list $brew_package_name > /dev/null; then
         echo "  Already installed! Skipping."
