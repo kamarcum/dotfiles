@@ -2,12 +2,12 @@
 
 ## Installation
 
-```
-git clone https://github.com/kamarcum/dotfiles $HOME/.dotfiles
-bash $HOME/.dotfiles/script/setup
-```
-
-If you don't want packer, add `SKIP_PACKER=true` to the script command above.
+1. Install MonoLisa (if that's your jam. It's definitely mine!)
+2. Do the basic setup for SSH keys in GitHub
+3. Clone this repo
+  - `git clone https://github.com/elizamarcum/dotfiles $HOME/.dotfiles`
+4. Run the setup script
+  - `bash $HOME/.dotfiles/script/setup`
 
 ## Structure
 
@@ -21,3 +21,9 @@ If you don't want packer, add `SKIP_PACKER=true` to the script command above.
     |
     + scripts/        scripts for managing dotfiles
 ```
+
+## Changes when upgrading from a pre-2026 version of these files
+
+* `.bash_aliases` has been renamed to `.profile`
+* Support for `.bash_aliases` in the rc files themselves has been maintained
+* The script now renames `.bash_aliases.local` to `.profile.local`

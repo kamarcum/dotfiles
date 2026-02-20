@@ -1,3 +1,6 @@
+# This file is read by the GNU Readline library (which is used by BASH).
+# ZSH key bindings are configured in .zshrc
+
 # this makes the "delete" key work rather than
 # just entering a ~
 
@@ -6,14 +9,18 @@
 # these allow you to use ctrl+left/right arrow keys
 # to jump the cursor over words
 
+# Ctrl + →
 "\e[5C": forward-word
+# Ctrl + ←
 "\e[5D": backward-word
  
 # these allow you to start typing a command and
 # use the up/down arrow to auto complete from
 # commands in your history
 
+# Down Arrow
 "\e[B": history-search-forward
+# Up Arrow
 "\e[A": history-search-backward
  
 # this lets you hit tab to auto-complete a file or
@@ -21,3 +28,13 @@
 # directory name ignoring case
 
 set completion-ignore-case On
+
+# These are bindings that were previously in .bashrc instead of .inputrc
+
+set bind-tty-special-chars off
+
+"\ep": history-search-backward
+"\en": history-search-forward
+# Ctrl-w
+"\C-w": backward-kill-word
+"\C-q": "%-\n"

@@ -4,13 +4,51 @@ SCRIPT_DIR="$(dirname $0)"
 DOTFILES_HOME="${HOME}/.dotfiles/home"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
+# Source: https://gist.github.com/karancode/f43bc93f9e47f53e71fa29eed638243c
+ask() {
+    local prompt default reply
+
+    if [[ ${2:-} = 'Y' ]]; then
+        prompt='Y/n'
+        default='Y'
+    elif [[ ${2:-} = 'N' ]]; then
+        prompt='y/N'
+        default='N'
+    else
+        prompt='y/n'
+        default=''
+    fi
+
+    while true; do
+        # Ask the question (not using "read -p" as it uses stderr not stdout)
+        echo -n "$1 [$prompt] "
+
+        # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
+        read -r reply </dev/tty
+
+        # Default?
+        if [[ -z $reply ]]; then
+            reply=$default
+        fi
+
+        # Check if the reply is valid
+        case "$reply" in
+            Y*|y*) return 0 ;;
+            N*|n*) return 1 ;;
+        esac
+
+    done
+}
+
 copy() {
-  echo "Copying $1"
-  if [ -f "$HOME/$1" ]; then
-    echo "  Oh dear. I couldn't copy $1 because it already exists."
-    echo "  This is totally normal if you've already run this script once before."
-    echo "  If you want to use my latest copy of that file,"
-    echo "  \`rm $HOME/$1\` and rerun this script."
+  echo "  Copying $1"
+  if cmp -s "$HOME/$1" "${DOTFILES_HOME}/$1"; then
+    echo "    Skipping copying $1 because it has already been copied and is identical to the template file."
+  elif [ -f "$HOME/$1" ]; then
+    echo "    !! Could not copy $1 because it already exists."
+    echo "       This is expected if you have run this script before."
+    echo "       If you want to use my latest copy of that file,"
+    echo "       \`rm $HOME/$1\` and rerun this script."
     return 1
   else
     cp "${DOTFILES_HOME}/$1" "${HOME}/$1"
@@ -18,15 +56,53 @@ copy() {
 }
 
 link() {
-  echo "Linking $1"
+  echo "  Linking $1"
   if [ "$(readlink $HOME/$1)" == "${DOTFILES_HOME}/$1" ]; then
     return 0;
   elif [ -f "$HOME/$1" ]; then
-    echo "  Oh dear. I couldn't symlink $1 because it's already a file."
-    echo "  \`rm $HOME/$1\` and rerun this script to establish the link."
+    echo "    Oh dear. I couldn't symlink $1 because it's already a file."
+    echo "    \`rm $HOME/$1\` and rerun this script to establish the link."
     return 1
   else
     ln -s "${DOTFILES_HOME}/$1" "${HOME}/$1"
+  fi
+}
+
+rename() {
+  if [ -f "${HOME}/$1" ]; then
+    echo "  Renaming ~/$1 to ~/$2"
+    mv "${HOME}/$1" "${HOME}/$2"
+  else
+    return 0;
+  fi
+}
+
+install_brew() {
+  if [ $OS == "darwin" ]; then
+    if [ -f /opt/homebrew/bin/brew ]; then
+      echo "  Homebrew is already installed."
+    else
+      echo "  Installing homebrew"
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+
+    if [ -x "$(command -v brew)" ]; then
+      echo "    Homebrew appears to be configured correctly."
+    else
+      echo "    Homebrew needs to be loaded in the shell."
+      echo ""
+      if [ $SHELL == "/bin/zsh" ]; then
+        echo "    Run the following command in your shell and then restart this script:"
+        echo "    eval \"\$(/opt/homebrew/bin/brew shellenv zsh)\""
+      elif [ $SHELL == "/bin/bash" ]; then
+        echo "    Run the following command in your shell and then restart this script:"
+        echo "    eval \"\$(/opt/homebrew/bin/brew bash)\""
+      else
+        echo "    Neither Bash nor Zsh detected."
+        echo "    You will have to follow the instructions from the brew install script to load brew in your current shell"
+      fi
+      exit 1;
+    fi
   fi
 }
 
@@ -34,26 +110,25 @@ install() {
   # Arguments to install are brew-package-name apt-get-package-name apt-get-package-args
   brew_package_name="$1"
   apt_get_args="${@:2}"
-  echo "Preparing to install ${brew_package_name} / ${apt_get_args}"
   if [ $OS == "linux" ]; then
+  echo "  Preparing to install ${apt_get_args}"
     sudo apt-get install -yqq "$apt_get_args"
   elif [ $OS == "darwin" ]; then
-    has_brew=$(command -v brew > /dev/null)
-    if $has_brew; then
+  echo "  Preparing to install ${brew_package_name}"
+    if [ -x "$(command -v brew)" ]; then
       if brew list $brew_package_name > /dev/null; then
-        echo "  Already installed! Skipping."
+        echo "    Already installed! Skipping."
       else
         brew install $brew_package_name
         exit_code=$?
         if [ $exit_code != 0 ]; then
-          echo "  Installation Failed. Exiting."
+          echo "    Installation Failed. Exiting."
           exit $exit_code
         fi
       fi
     else
       echo "  Homebrew wasn't found!"
       echo "  Please install Homebrew at http://brew.sh and then rerun this script."
-      echo "  Exiting. For your own good."
       exit 1
     fi
   else
@@ -62,73 +137,94 @@ install() {
   fi
 }
 
-setup_bash() {
-  link ".bash_aliases"
-  copy ".bash_aliases.local"
-  link ".bashrc" || echo "  Note: Your .bashrc must load .bash_aliases for this setup to run correctly"
-  link ".bash_profile" || echo "  Note: Your .bash_profile must load .bashrc for this setup to run correctly"
-  echo "Note: To customize your bash settings, edit ~/.bash_aliases.local"
-  read -rsp $'Press any key to continue...\n'
+setup_shells() {
+  echo "Step 1: Setup BASH/ZSH"
+  link ".profile"
+  rename ".bash_aliases.local" ".profile.local" || copy ".profile.local"
+  link ".bash_profile" || echo "  Note: Your .bash_profile must load .profile for this setup to run correctly"
+  link ".zshenv" || echo "  Note: Your .zshenv must load .profile for this setup to run correctly"
+
+  link ".bashrc" || echo "  Note: Your .bashrc must load .profile for this setup to run correctly"
+  link ".bashrc.local"
+  link ".inputrc"
+  link ".zshrc"
+  link ".zshrc.local"
+  echo ""
+  echo "  To customize your alias/ENV settings now, edit ~/.profile.local."
+  echo "  To customize your interactive bash and zsh shells, edit .bashrc.local and .zshrc.local respectively"
+  echo ""
+  read -rsp $'  Press enter to continue...\n'
 }
 
-install_hub() {
-  local version="2.10.0"
-  echo "Installing hub version $version"
-  if [ -f /usr/local/bin/hub ] &&
-    [ "$version" == "$(hub --version | tail -n 1 | cut -d ' ' -f 3)" ]; then
-    return 0;
-  fi
-
-  cd $HOME
-  curl -fLso hub.tgz \
-    "https://github.com/github/hub/releases/download/v${version}/hub-${OS}-amd64-${version}.tgz"
-  mkdir hub
-  tar -xzf hub.tgz -C hub --strip-components=1
-  sudo ./hub/install
-  rm -rf "$HOME/hub"
-}
-
+# Step 2
 setup_git() {
+  echo "Step 2: Setup git"
   link ".gitconfig"
   link ".gitignore.global"
   copy ".gitconfig.local"
-  echo "Note: Edit ~/.gitconfig.local to use your own username and email!"
-  read -rsp $'Press any key to continue...\n'
-  install_hub
+  echo ""
+  echo "  Edit ~/.gitconfig.local to use your own username and email!"
+  read -rsp $'  Then, press enter to continue...\n'
 }
 
+# Step 3
+install_packages() {
+  echo "Step 3: Install packages"
+  install_brew
+  echo "  Preparing to install packages from ~/.package_list"
+  copy ".package_list"
+  echo ""
+  echo "  Please make sure your personal package list in ~/.package_list is up to date before continuing."
+  read -rsp $'Press enter to continue...\n'
+  for package in $(cat ~/.package_list); do
+    install "$package" "$package"
+  done
+}
+
+# Step 4
 setup_vim() {
+  echo "Step 4: Setup vim"
   link ".vimrc"
   copy ".vimrc.local"
+  echo ""
+  echo "  To customize your vim settings now, edit ~/.vimrc.local"
+  read -rsp $'  Otherwise, press enter to continue...\n'
 
   if [ ! -f ~/.vim/autoload/plug.vim ]; then
-    echo "Downloading plug.vim"
+    echo "  Downloading plug.vim"
     curl -fLso ~/.vim/autoload/plug.vim --create-dirs \
           https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   fi
 
-  echo "Installing Vim plugins"
+  echo "  Installing Vim plugins"
   vim +"PlugInstall --sync" +qa > /dev/null 2>&1
   mkdir -p ~/.vim/tmp
 }
 
-setup_tmux() {
-  install tmux tmux
+# Step 5
+link_misc_files(){
+  echo "Step 5: Linking remaining miscellaneous files"
+  link ".ackrc"
   link ".tmux.conf"
 }
 
+# Step 6
 install_packer() {
-  if [ "$SKIP_PACKER" == "true" ]; then
-    echo "Skipping installation of packer"
-    return 0;
-  fi
-  echo "Installing packer"
-  local version="1.3.5"
+  echo "Step 6: Installing Packer"
   if [ -f /usr/local/bin/packer ] && [ "$version" == "$(packer --version)" ]; then
+    echo "  Packer is already installed"
     return 0;
   fi
 
+  if ask "  Do you want to install packer?" N; then
+    echo "  Installing packer"
+  else
+      echo "  Skipping packer"
+      return 0;
+  fi
+
   install unzip unzip
+  local version="1.3.5"
   cd $HOME
   curl -fLso packer.zip \
     "https://releases.hashicorp.com/packer/${version}/packer_${version}_${OS}_amd64.zip"
@@ -137,8 +233,46 @@ install_packer() {
   rm packer.zip
 }
 
+# Step 7
+install_rubies() {
+    echo "Step 7: Installing Ruby"
+    link ".gemrc"
+    while true; do
+        # Ask the question (not using "read -p" as it uses stderr not stdout)
+        echo -n "Step 7: Do you want to install asdf (1) or rbenv (2)? [1/2]"
+
+        # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
+        read -r reply </dev/tty
+
+        # Check if the reply is valid
+        case "$reply" in
+            1) install_asdf_and_a_ruby; return 0 ;;
+            2) install_rbenv_and_a_ruby; return 1 ;;
+        esac
+    done
+}
+
+install_asdf_and_a_ruby() {
+  echo "Setting up asdf"
+  install asdf &&
+  export PATH="$HOME/.asdf/shims:$PATH" &&
+  echo "  Adding ruby plugin to asdf"
+  asdf plugin add ruby &&
+  echo "  Installing latest ruby" &&
+  asdf install ruby latest
+  asdf set -u ruby latest
+}
+
+install_rbenv_and_a_ruby() {
+  install_rbenv
+  install_rbenv_ruby_build_dependencies
+  cd "$HOME/.rbenv/plugins/ruby-build"
+  git pull -q
+  "$HOME/.rbenv/bin/rbenv" install $("$HOME/.rbenv/bin/rbenv" install -l | grep -v - | tail -1)
+}
+
 install_rbenv() {
-  echo "Installing rbenv"
+  echo "  Installing rbenv"
   local rbenv_root="$HOME/.rbenv"
   local rbenv="$rbenv_root/bin/rbenv"
   if [ -d "$rbenv_root" ]; then
@@ -151,7 +285,7 @@ install_rbenv() {
   git clone https://github.com/rbenv/ruby-build.git "${rbenv_root}/plugins/ruby-build"
 }
 
-install_ruby_build_dependencies() {
+install_rbenv_ruby_build_dependencies() {
   if [ $OS == "darwin" ]; then
     return 0;
   fi
@@ -162,34 +296,11 @@ install_ruby_build_dependencies() {
   install no_darwin_equivalent libssl-dev
 }
 
-install_rubies() {
-  install_rbenv
-  install_ruby_build_dependencies
-  cd "$HOME/.rbenv/plugins/ruby-build"
-  git pull -q
-  "$HOME/.rbenv/bin/rbenv" install -s 3.1.2
-  link ".gemrc"
-}
-
-install_personal_packages() {
-  echo "Preparing to install packages from ~/.package_list"
-  copy ".package_list"
-  echo "Please make sure your personal package list in ~/.package_list is up to date before continuing."
-  read -rsp $'Press any key to continue...\n'
-  for package in $(cat ~/.package_list); do
-    install "$package" "$package"
-  done
-}
-
-link ".ackrc" &&
-link ".inputrc" &&
-setup_bash &&
+setup_shells &&
 setup_git &&
+install_packages &&
 setup_vim &&
-setup_tmux &&
+link_misc_files &&
 install_packer &&
 install_rubies &&
-install jq jq &&
-install tree tree &&
-install_personal_packages &&
-echo "You're good to go. Customize .gitconfig.local and you'll be off to the races!"
+echo "You're good to go. Open a new shell and you'll be off to the races!"

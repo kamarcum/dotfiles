@@ -1,8 +1,13 @@
 ack
-geckodriver
+bash-completion
+gh
 hunspell
 imagemagick
 ispell
+jq
+mactex
 macvim
-postgresql
+postgresql@18
 redis
+tree
+tmux
