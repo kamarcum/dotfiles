@@ -254,6 +254,7 @@ install_rubies() {
 
 install_asdf_and_a_ruby() {
   echo "Setting up asdf"
+  link ".asdfrc" &&
   install asdf &&
   export PATH="$HOME/.asdf/shims:$PATH" &&
   echo "  Adding ruby plugin to asdf"
