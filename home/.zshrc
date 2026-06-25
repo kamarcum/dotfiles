@@ -16,8 +16,14 @@ setopt HIST_IGNORE_SPACE         # Don\'t record an entry starting with a space.
 setopt HIST_SAVE_NO_DUPS         # Don\'t write duplicate entries in the history file.
 setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
 
-bindkey "^[[A" history-beginning-search-backward
-bindkey "^[[B" history-beginning-search-forward
+autoload -U up-line-or-beginning-search
+autoload -U down-line-or-beginning-search
+
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+
+bindkey "^[[A" up-line-or-beginning-search
+bindkey "^[[B" down-line-or-beginning-search
 
 if [ -f ~/.zshrc.local ]; then
   . ~/.zshrc.local
