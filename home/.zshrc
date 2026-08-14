@@ -25,10 +25,6 @@ zle -N down-line-or-beginning-search
 bindkey "^[[A" up-line-or-beginning-search
 bindkey "^[[B" down-line-or-beginning-search
 
-if [ -f ~/.zshrc.local ]; then
-  . ~/.zshrc.local
-fi
-
 if [ -d "$HOME/.rbenv/bin" ]; then
   export PATH="$HOME/.rbenv/bin:$PATH"
   eval "$(rbenv init -)"
@@ -50,4 +46,8 @@ fi
 # when adding it only in .profile
 if [ -f /opt/homebrew/bin/brew ]; then
   export PATH="/opt/homebrew/bin:$PATH"
+fi
+
+if [ -f ~/.zshrc.local ]; then
+  . ~/.zshrc.local
 fi

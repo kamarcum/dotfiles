@@ -16,10 +16,6 @@ export HISTIGNORE="[ \t]*"
 # Append to history file
 shopt -s histappend
 
-if [ -f ~/.bashrc.local ]; then
-  . ~/.bashrc.local
-fi
-
 if [ -d "$HOME/.rbenv/bin" ]; then
   export PATH="$HOME/.rbenv/bin:$PATH"
   eval "$(rbenv init -)"
@@ -32,4 +28,8 @@ fi
 # when adding it only in .profile
 if [ -f /opt/homebrew/bin/brew ]; then
   export PATH="/opt/homebrew/bin:$PATH"
+fi
+
+if [ -f ~/.bashrc.local ]; then
+  . ~/.bashrc.local
 fi
