@@ -73,7 +73,7 @@ rename() {
     echo "  Renaming ~/$1 to ~/$2"
     mv "${HOME}/$1" "${HOME}/$2"
   else
-    return 0;
+    return 1;
   fi
 }
 
@@ -145,15 +145,16 @@ setup_shells() {
   link ".zshenv" || echo "  Note: Your .zshenv must load .profile for this setup to run correctly"
 
   link ".bashrc" || echo "  Note: Your .bashrc must load .profile for this setup to run correctly"
-  link ".bashrc.local"
+  copy ".bashrc.local"
   link ".inputrc"
   link ".zshrc"
-  link ".zshrc.local"
+  copy ".zshrc.local"
   echo ""
-  echo "  To customize your alias/ENV settings now, edit ~/.profile.local."
-  echo "  To customize your interactive bash and zsh shells, edit .bashrc.local and .zshrc.local respectively"
+  echo "  To customize your alias/ENV settings for all shells, edit ~/.profile.local."
+  echo "  To customize your interactive bash shells, edit .bashrc.local"
+  echo "  To customize your interactive zsh shells, edit .zshrc.local"
   echo ""
-  read -rsp $'  Press enter to continue...\n'
+  read -rsp $'  Then, press enter to continue...\n'
 }
 
 # Step 2
@@ -171,14 +172,12 @@ setup_git() {
 install_packages() {
   echo "Step 3: Install packages"
   install_brew
-  echo "  Preparing to install packages from ~/.package_list"
-  copy ".package_list"
+  copy "Brewfile"
+  echo "  Preparing to install packages from ~/Brewfile"
   echo ""
-  echo "  Please make sure your personal package list in ~/.package_list is up to date before continuing."
+  echo "  Please make sure your personal package list in ~/Brewfile is up to date before continuing."
   read -rsp $'Press enter to continue...\n'
-  for package in $(cat ~/.package_list); do
-    install "$package" "$package"
-  done
+  brew bundle check --file ~/Brewfile > /dev/null 2>&1 || brew bundle install --file ~/Brewfile
 }
 
 # Step 4
@@ -197,7 +196,7 @@ setup_vim() {
   fi
 
   echo "  Installing Vim plugins"
-  vim +"PlugInstall --sync" +qa > /dev/null 2>&1
+  vim +"PlugInstall --sync" +qa
   mkdir -p ~/.vim/tmp
 }
 
@@ -239,7 +238,7 @@ install_rubies() {
     link ".gemrc"
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
-        echo -n "Step 7: Do you want to install asdf (1) or rbenv (2)? [1/2]"
+        echo -n "Step 7: Do you want to install asdf (1) or rbenv (2) or skip ruby entirely (3)? [1/2/3] "
 
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
         read -r reply </dev/tty
@@ -247,7 +246,8 @@ install_rubies() {
         # Check if the reply is valid
         case "$reply" in
             1) install_asdf_and_a_ruby; return 0 ;;
-            2) install_rbenv_and_a_ruby; return 1 ;;
+            2) install_rbenv_and_a_ruby; return 0 ;;
+            3) return 0 ;;
         esac
     done
 }

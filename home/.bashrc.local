@@ -1,9 +1,3 @@
-# Ruby/Rails functions via https://github.com/hashrocket/dotmatrix/blob/master/.sharedrc
-#
-twiki () {
-  rake db:migrate && rake db:migrate:redo && rake db:test:prepare
-}
-
 # get current branch in git repo
 function parse_git_branch() {
 	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
