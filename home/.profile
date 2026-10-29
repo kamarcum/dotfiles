@@ -1,12 +1,9 @@
-alias tmux="tmux -2"
+# Aliases and Environment Variables
+
 export EDITOR="vim"
-
-export PATH="$HOME/.rbenv/bin:$PATH"
-
-eval "$(rbenv init -)"
+alias tmux="tmux -2"
 
 # Git aliases via. https://github.com/hashrocket/dotmatrix/blob/master/.sharedrc
-#
 alias gap='git add -p'
 alias gb='git branch'
 alias gc='git commit -v'
@@ -32,24 +29,13 @@ alias gst='git status'
 alias reset-authors='git commit --amend --reset-author -C HEAD'
 alias ll='ls -l'
 
-# Store 10,000 history entries
-export HISTSIZE=10000
-# Don't store duplicates
-export HISTCONTROL=erasedups
-# Don't include commands starting with a space in history
-export HISTIGNORE="[ \t]*"
-# Append to history file
-shopt -s histappend
-
-if [ -t 1 ]; then
-  bind 'set bind-tty-special-chars off'
-  bind '"\ep": history-search-backward'
-  bind '"\en": history-search-forward'
-  bind '"\C-w": backward-kill-word'
-  bind '"\C-q": "%-\n"'
+if [ -f ~/.profile.local ]; then
+  . ~/.profile.local
 fi
 
-
-if [ -f ~/.bash_aliases.local ]; then
-  . ~/.bash_aliases.local
+# This is here because brew now advises that it go in ./bash_profile/.zprofile instead of the rc files
+if [ -n "$ZSH_VERSION" ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+elif [ -n "$BASH_VERSION" ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv bash)"
 fi

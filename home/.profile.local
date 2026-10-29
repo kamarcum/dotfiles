@@ -1,0 +1,7 @@
+# Aliases and Environment Variables
+# Commands in this file must be compatible with any `bin/sh` (e.g. bash, zsh, etc)
+
+# A favorite Ruby/Rails helper (via https://github.com/hashrocket/dotmatrix/blob/master/.sharedrc)
+twiki () {
+  rake db:migrate && rake db:migrate:redo && rake db:test:prepare
+}

@@ -5,12 +5,52 @@ let NERDTreeDirArrowExpandable='+'
 
 call plug#begin()
 Plug 'airblade/vim-gitgutter'
+Plug 'ervandew/supertab'
+Plug 'exu/pgsql.vim'
 Plug 'flazz/vim-colorschemes'
-Plug 'hashivim/vim-terraform'
+Plug 'leshill/vim-json'
+Plug 'mileszs/ack.vim'
+Plug 'pangloss/vim-javascript'
 Plug 'rodjek/vim-puppet'
+Plug 'rondale-sc/vim-spacejam'
 Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-git'
+Plug 'tpope/vim-haml'
+Plug 'tpope/vim-markdown'
+Plug 'tpope/vim-projectionist'
 Plug 'tpope/vim-rails'
 Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-bundler'
 Plug 'tpope/vim-surround'
 call plug#end()
+
+set ts=2
+set sw=2
+set splitright
+set splitbelow
+set visualbell
+set hidden
+set nofoldenable
+set norelativenumber
+
+nnoremap <silent> <C-K> :%s/\s\+$//e<CR><C-K>
+nnoremap K k
+xnoremap K k
+" Original Bindings:
+" nnoremap <Tab> <C-w>w
+" nnoremap <S-Tab> <C-w>W
+" Update Bindings, via https://vim.fandom.com/wiki/Shifting_blocks_visually
+nnoremap <Tab> >>_
+nnoremap <S-Tab> <<_
+inoremap <S-Tab> <C-D>
+vnoremap <Tab> >gv
+vnoremap <S-Tab> <gv
+
+set guioptions=e
+
+colorscheme solarized
+set background=light
+" set guifont=Menlo:h14
+set guifont=MonoLisa:h14
